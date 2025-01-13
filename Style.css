@@ -1,7 +1,7 @@
 BODY 
 {
-	color: Black;
-	background-color:White;
+    color: Black;
+    background-color:White;
     border: 0px;   
 }
 * {
@@ -60,6 +60,7 @@ BODY
 .ErrorText	{ color: #8b0000; font-weight: bold;}
 .FriendlyErrorText { color: Navy; }
 .ProgressText {display:inline; color:#2c5b85;  background-color:#DFE6EC;}
+.FooterText { text-align:center; }
 
 .TextBox
 {
@@ -137,6 +138,19 @@ select.WebControl:disabled
 {
 }
 
+.HelpImage { cursor: pointer; vertical-align: middle; }
+
+.FloatingTip
+{
+	padding: 4px;
+	border: solid 1px Navy;
+	background-color: PaleGoldenrod;
+	color: Navy;
+	position: absolute;
+	cursor: pointer; 
+	font-weight: 600;
+}
+
 .Link
 {
 	float:right;
@@ -191,9 +205,9 @@ LABEL.IconSmall
 	position: relative;
 }
 
-.Icon_Excel:before, .Icon_Login_Toggle:before, .Icon_Display_Toggle:before, .Icon_Display:before, .Icon_Add_Toggle:before, 
-.Icon_Add:before, .Icon_Edit_Toggle:before, .Icon_Edit:before, .Icon_Delete_Toggle:before, .Icon_Delete:before, .Icon_Close_Toggle:before, 
-.Icon_Done_Toggle:before, .Icon_Done:before, .Icon_Reset:before, .Icon_Save_Toggle:before, .Icon_Save:before, .Icon_Cancel:before, 
+.Icon_Excel:before, .Icon_Login_Toggle:before, .Icon_Display_Toggle:before, .Icon_Display:before, .Icon_Add_Toggle:before, .Icon_Clear:before,
+.Icon_Add:before, .Icon_Edit_Toggle:before, .Icon_Edit:before, .Icon_Delete_Toggle:before, .Icon_Delete:before, .Icon_Close:before, 
+.Icon_Done_Toggle:before, .Icon_Done:before, .Icon_Refresh:before, .Icon_Save_Toggle:before, .Icon_Save:before, .Icon_Cancel:before, 
 .Icon_Undo:before, .Icon_Redo:before, .Icon_Filter:before, .Icon_Print_Toggle:before, .Icon_Print:before, .Icon_Update_Toggle:before, 
 .Icon_Update:before, .Icon_Upload_Toggle:before, .Icon_Upload:before, .Icon_Exec_Toggle:before, .Icon_Exec:before, .Icon_Logout:before   
 {
@@ -258,10 +272,14 @@ LABEL.IconSmall
 	background: url("images/delete.svg") center / 65% no-repeat;
 }
 
-.Icon_Close_Toggle:before 
+.Icon_Clear:before 
 {
-	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
-	background: url("images/cancel.svg") center / 65% no-repeat;
+	background: url("images/delete.svg") center / 65% no-repeat;
+}
+
+.Icon_Close:before 
+{
+	background: url("images/close.svg") center / 65% no-repeat;
 }
 
 .Icon_Done_Toggle:before 
@@ -275,20 +293,20 @@ LABEL.IconSmall
 	background: url("images/done.svg") center / 65% no-repeat;
 }
 
-.Icon_Reset:before 
+.Icon_Refresh:before 
 {
-	background: url("images/reset.svg") center / 65% no-repeat;
+	background: url("images/refresh.svg") center / 65% no-repeat;
 }
 
 .Icon_Save_Toggle:before 
 {
 	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
-	background: url("images/check.svg") center / 65% no-repeat;
+	background: url("images/save.svg") center / 65% no-repeat;
 }
 
 .Icon_Save:before 
 {
-	background: url("images/check.svg") center / 65% no-repeat;
+	background: url("images/save.svg") center / 65% no-repeat;
 }
 
 .Icon_Cancel:before 

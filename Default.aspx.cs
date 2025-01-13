@@ -21,10 +21,6 @@ namespace NeoEditor
     public partial class EditFile : System.Web.UI.Page
     {
         public string m_PageTitle;
-        public string m_ErrorInvalidFile;
-        public string m_ErrorInvalidFileToSave;
-        public string m_ErrorInvalidFileType;
-        public string m_ErrorFileNotExist;
 
         protected System.Web.UI.WebControls.Label lblError;
         protected System.Web.UI.WebControls.Label lblFileName;
@@ -33,16 +29,26 @@ namespace NeoEditor
         protected System.Web.UI.WebControls.Button btnSave;
         protected System.Web.UI.WebControls.Button btnUndo;
         protected System.Web.UI.WebControls.Button btnRedo;
+        protected System.Web.UI.WebControls.Button btnCloseFile;
+        protected System.Web.UI.WebControls.Button btnClear;
         protected System.Web.UI.HtmlControls.HtmlGenericControl divEditFile;
         protected System.Web.UI.WebControls.TextBox txtFileContent;
         protected System.Web.UI.WebControls.Literal ltInstructions;
         protected System.Web.UI.HtmlControls.HtmlInputButton btnPrint;
+        protected System.Web.UI.HtmlControls.HtmlInputButton btnRefresh;
         protected System.Web.UI.HtmlControls.HtmlInputButton btnClose;
+        protected System.Web.UI.HtmlControls.HtmlInputHidden hdnFileName;
         protected System.Web.UI.HtmlControls.HtmlInputHidden hdnFileType;
+        protected System.Web.UI.HtmlControls.HtmlInputHidden hdnOwnLock;
         protected System.Web.UI.WebControls.FileUpload uplTheFile;
         protected System.Web.UI.WebControls.Button btnOpen;
         protected System.Web.UI.WebControls.CheckBox chkEditInline;
         protected System.Web.UI.WebControls.Label lblEditInline;
+        protected System.Web.UI.WebControls.CheckBox chkSaveAndClose;
+        protected System.Web.UI.WebControls.Label lblSaveAndClose;
+        protected System.Web.UI.WebControls.Label lblFiles;
+        protected System.Web.UI.WebControls.DropDownList ddlFiles;
+        protected System.Web.UI.HtmlControls.HtmlGenericControl divInstructions;
 
         #region Web Form Designer generated code
         override protected void OnInit(EventArgs e)
@@ -62,6 +68,8 @@ namespace NeoEditor
         {
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            this.btnCloseFile.Click += new System.EventHandler(this.btnCloseFile_Click);
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
             this.Load += new System.EventHandler(this.Page_Load);
@@ -73,40 +81,105 @@ namespace NeoEditor
             if (!Page.IsPostBack)
             {
                 Localize();
+                divInstructions.Attributes["style"] = "visibility:hidden";
 
-                Data.FilePatches.CreateTable();
+                Data.FilePatches.CreateTable(ViewState_RootDir);
+                Data.FileLocks.CreateTable(ViewState_RootDir);
+
+                string sFileName;
+                ddlFiles.Items.Add(new ListItem("[None]", "0"));
+
+                foreach (string sFilePath in Directory.GetFiles(Server.MapPath(Config.FilesDir), "*.*", SearchOption.TopDirectoryOnly))
+                {
+                    sFileName = Path.GetFileName(sFilePath);
+                    ddlFiles.Items.Add(new ListItem(sFileName, sFileName));
+                }
+
+                ddlFiles.SelectedValue = "0";
             }
         }
 
         private void DisplayFileContents()
         {
-            string sFileName;
+            string sFileName = string.Empty;
             if ((uplTheFile.PostedFile != null) && (uplTheFile.PostedFile.ContentLength > 0))
             {
                 sFileName = System.IO.Path.GetFileName(uplTheFile.PostedFile.FileName);
             }
+
+            if (ddlFiles.SelectedValue != "0")
+            {
+                sFileName = ddlFiles.SelectedValue;
+                if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
+                {
+                    ShowErrorMessage(ViewState_FileLocked);
+                    return;
+                }
+                else
+                {
+                    hdnOwnLock.Value = "1";
+                    Data.FileLocks.Create(ViewState_RootDir, sFileName);
+                }
+            }
             else
             {
-                ShowErrorMessage(m_ErrorInvalidFile);
+                if (!File.Exists(Server.MapPath(Config.FilesDir) + sFileName))
+                {
+                    hdnOwnLock.Value = "1";
+                    Data.FileLocks.Create(ViewState_RootDir, sFileName);
+                }
+                else
+                {
+                    if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
+                    {
+                        ShowErrorMessage(ViewState_FileLocked);
+                        return;
+                    }
+                    else
+                    {
+                        hdnOwnLock.Value = "1";
+                        Data.FileLocks.Create(ViewState_RootDir, sFileName);
+                    }
+                }
+            }
+
+            if (!sFileName.HasValue())
+            {
+                ShowErrorMessage(ViewState_InvalidFile);
                 return;
             }
 
             string sFileType = Path.GetExtension(sFileName).ToUpper();
             hdnFileType.Value = sFileType;
 
+            lblFilePath.Text = sFileName;
+            hdnFileName.Value = sFileName;
+
+            sFileName = Server.MapPath(Config.FilesDir) + sFileName;
+            if (ddlFiles.SelectedValue != "0" && !File.Exists(sFileName))
+            {
+                ShowErrorMessage(string.Format(ViewState_FileNotExist, Server.HtmlEncode(sFileName)));
+                return;
+            }
+
             try
             {
                 string sFileContent;
-                using (StreamReader inputStreamReader = new StreamReader(uplTheFile.PostedFile.InputStream))
+                if (ddlFiles.SelectedValue != "0")
                 {
-                    sFileContent = inputStreamReader.ReadToEnd();
+                    sFileContent = System.IO.File.ReadAllText(sFileName);
+                }
+                else
+                {
+                    using (StreamReader inputStreamReader = new StreamReader(uplTheFile.PostedFile.InputStream))
+                    {
+                        sFileContent = inputStreamReader.ReadToEnd();
+                    }
                 }
                 txtFileContent.Text = sFileContent;
                 ViewState_FileContent = sFileContent;
                 ViewState_Original_FileContent = sFileContent;
-                lblFilePath.Text = sFileName;
-                sFileName = Config.FilesDir + sFileName;
-                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(sFileName, null);
+                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, null);
                 if (filepatch == null)
                 {
                     ViewState_VersionNo = 0;
@@ -131,41 +204,50 @@ namespace NeoEditor
         {
             if (errMsg.HasValue())
             {
-                lblFileName.Visible = false;
-                txtFileContent.Visible = false;
-                btnPrint.Visible = false;
-                btnSave.Visible = false;
-                btnUndo.Visible = false;
-                btnRedo.Visible = false;
-                ltInstructions.Visible = false;
+                ddlFiles.SelectedValue = "0";
+                txtFileContent.Text = string.Empty;
+                if (errMsg != ViewState_FileLocked) Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+                lblFilePath.Text = string.Empty;
+                hdnFileName.Value = string.Empty;
                 lblError.Text = errMsg;
                 lblError.Visible = true;
+                hdnOwnLock.Value = "0";
             }
         }
 
         private void btnOpen_Click(object sender, System.EventArgs e)
         {
+            lblError.Text = string.Empty;
+            lblError.Visible = false;
+
             DisplayFileContents();
         }
 
         private void btnSave_Click(object sender, System.EventArgs e)
         {
             lblError.Text = string.Empty;
+            lblError.Visible = false;
             lblChangeCount.Text = string.Empty;
-            string sFileName = lblFilePath.Text;
+            string sFileName = hdnFileName.Value;
             if (!sFileName.HasValue())
             {
-                ShowErrorMessage(m_ErrorInvalidFileToSave);
+                ShowErrorMessage(ViewState_InvalidFileToSave);
+                return;
+            }
+
+            if (hdnOwnLock.Value == "0" && Data.FileLocks.Check(ViewState_RootDir, sFileName))
+            {
+                ShowErrorMessage(ViewState_FileLocked);
                 return;
             }
 
             string sErrMsg = null;
-            sFileName = Config.FilesDir + sFileName;
+            sFileName = Server.MapPath(Config.FilesDir) + sFileName;
 
             try
             {
                 File.WriteAllText(sFileName, txtFileContent.Text);
-
+                
                 diff_match_patch dmp = new diff_match_patch();
                 dmp.Match_Distance = 1000;
                 dmp.Match_Threshold = 0.5f;
@@ -174,29 +256,102 @@ namespace NeoEditor
                 string strPatch = dmp.patch_toText(patches);
                 if (strPatch.HasValue())
                 {
-                    ViewState_VersionNo = Data.FilePatches.Create(sFileName, strPatch);
+                    ViewState_VersionNo = Data.FilePatches.Create(ViewState_RootDir, sFileName, strPatch);
                     patches = dmp.patch_make(ViewState_Original_FileContent, txtFileContent.Text);
                     strPatch = dmp.patch_toText(patches);
-                    Data.FilePatches.Update(sFileName, ViewState_VersionNo - 1, strPatch);
+                    Data.FilePatches.Update(ViewState_RootDir, sFileName, ViewState_VersionNo - 1, strPatch);
                 }
             }
             catch (System.Exception ex)
             {
                 sErrMsg = ex.Message;
             }
+
             if (sErrMsg.HasValue())
             {
                 ShowErrorMessage(sErrMsg);
             }
             else
             {
-                DisplayFileContents();
+                ddlFiles.Items.Clear();
+                ddlFiles.Items.Add(new ListItem("[None]", "0"));
+
+                foreach (string sFilePath in Directory.GetFiles(Server.MapPath(Config.FilesDir), "*.*", SearchOption.TopDirectoryOnly))
+                {
+                    sFileName = Path.GetFileName(sFilePath);
+                    ddlFiles.Items.Add(new ListItem(sFileName, sFileName));
+                }
+
+                ddlFiles.SelectedValue = hdnFileName.Value;
+
+                if (chkSaveAndClose.Checked)
+                {
+                    ddlFiles.SelectedValue = "0";
+                    txtFileContent.Text = string.Empty;
+                    Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+                    lblFilePath.Text = string.Empty;
+                    hdnFileName.Value = string.Empty;
+                    hdnOwnLock.Value = "0";
+                }
+                else
+                {
+                    ViewState_FileContent = txtFileContent.Text;
+                    ViewState_Original_FileContent = txtFileContent.Text;
+                    sFileName = Server.MapPath(Config.FilesDir) + hdnFileName.Value;
+                    Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, null);
+                    if (filepatch == null)
+                    {
+                        ViewState_VersionNo = 0;
+                        ViewState_UndoPatch = null;
+                        ViewState_RedoPatch = null;
+                    }
+                    else
+                    {
+                        ViewState_VersionNo = filepatch.VersionNo;
+                        ViewState_UndoPatch = filepatch.BackwardPatch;
+                        ViewState_RedoPatch = filepatch.ForwardPatch;
+                    }
+                    if (lblFilePath.Text != hdnFileName.Value)
+                    {
+                        hdnOwnLock.Value = "1";
+                        Data.FileLocks.Create(ViewState_RootDir, hdnFileName.Value);
+                    }
+                    lblFilePath.Text = hdnFileName.Value;
+                }
+            }
+        }
+
+        private void btnCloseFile_Click(object sender, System.EventArgs e)
+        {
+            lblError.Text = string.Empty;
+            lblError.Visible = false;
+            lblChangeCount.Text = string.Empty;
+            ddlFiles.SelectedValue = "0";
+            txtFileContent.Text = string.Empty;
+            Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+            lblFilePath.Text = string.Empty;
+            hdnFileName.Value = string.Empty;
+            hdnOwnLock.Value = "0";
+        }
+
+        private void btnClear_Click(object sender, System.EventArgs e)
+        {
+            string sFileName = hdnFileName.Value;
+            sFileName = Server.MapPath(Config.FilesDir) + sFileName;
+
+            try
+            {
+                Data.FilePatches.Delete(ViewState_RootDir, sFileName);
+            }
+            catch (System.Exception ex)
+            {
+                ShowErrorMessage(ex.Message);
             }
         }
 
         private void btnUndo_Click(object sender, System.EventArgs e)
         {
-            string sFileName = Config.FilesDir + lblFilePath.Text;
+            string sFileName = Server.MapPath(Config.FilesDir) + lblFilePath.Text;
 
             if (ViewState_VersionNo > 0)
             {
@@ -213,7 +368,7 @@ namespace NeoEditor
 
                 ViewState_VersionNo--;
                 ViewState_FileContent = txtFileContent.Text;
-                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(sFileName, ViewState_VersionNo);
+                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, ViewState_VersionNo);
                 if (filepatch == null)
                 {
                     ViewState_VersionNo = 0;
@@ -235,7 +390,7 @@ namespace NeoEditor
 
         private void btnRedo_Click(object sender, System.EventArgs e)
         {
-            string sFileName = Config.FilesDir + lblFilePath.Text;
+            string sFileName = Server.MapPath(Config.FilesDir) + lblFilePath.Text;
 
             if (ViewState_VersionNo >= 0 && ViewState_RedoPatch.HasValue())
             {
@@ -252,7 +407,7 @@ namespace NeoEditor
 
                 ViewState_VersionNo++;
                 ViewState_FileContent = txtFileContent.Text;
-                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(sFileName, ViewState_VersionNo);
+                Data.FilePatches.DataItem filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, ViewState_VersionNo);
                 ViewState_VersionNo = filepatch.VersionNo;
                 ViewState_UndoPatch = filepatch.BackwardPatch;
                 ViewState_RedoPatch = filepatch.ForwardPatch;
@@ -267,28 +422,87 @@ namespace NeoEditor
         {
             m_PageTitle = "Edit File";
             ViewState_Save = "Save";
+            ViewState_CloseFile = "Close File";
+            ViewState_Clear = "Clear Change History";
             ViewState_Undo = "Undo";
             ViewState_Redo = "Redo";
 
             btnOpen.Text = "Open";
             btnPrint.Value = "Print";
+            btnRefresh.Value = "Refresh";
             btnClose.Value = "Close Window";
             btnSave.Text = ViewState_Save;
+            btnCloseFile.Text = ViewState_CloseFile;
+            btnClear.Text = ViewState_Clear;
             btnUndo.Text = ViewState_Undo;
             btnRedo.Text = ViewState_Redo;
 
+            lblFiles.Text = "or select a file";
             lblFileName.Text = "File Name:";
             lblEditInline.Text = "Edit in the current window";
-            m_ErrorInvalidFile = "Please specify a file to edit.";
-            m_ErrorInvalidFileType = "Please specify an xml, xslt or json file to edit.";
-            m_ErrorFileNotExist = "File \"{0}\" doesn't exist.";
-            m_ErrorInvalidFileToSave = "Please specify a file to save.";
+            lblSaveAndClose.Text = "Save and Close";
+            ViewState_InvalidFile = "Please specify a file to edit.";
+            ViewState_InvalidFileType = "Please specify an xml, xslt or json file to edit.";
+            ViewState_FileNotExist = "File \"{0}\" doesn't exist.";
+            ViewState_InvalidFileToSave = "Please specify a file to save.";
+            ViewState_FileLocked = "File is locked for editing by another user.";
+            ViewState_RootDir = Server.MapPath("~");
+
+            hdnOwnLock.Value = "0";
+        }
+
+        private string ViewState_InvalidFile
+        {
+            get { return (string)ViewState["InvalidFile"]; }
+            set { ViewState["InvalidFile"] = value; }
+        }
+
+        private string ViewState_InvalidFileToSave
+        {
+            get { return (string)ViewState["InvalidFileToSave"]; }
+            set { ViewState["InvalidFileToSave"] = value; }
+        }
+
+        private string ViewState_InvalidFileType
+        {
+            get { return (string)ViewState["InvalidFileType"]; }
+            set { ViewState["InvalidFileType"] = value; }
+        }
+
+        private string ViewState_FileNotExist
+        {
+            get { return (string)ViewState["FileNotExist"]; }
+            set { ViewState["FileNotExist"] = value; }
+        }
+
+        private string ViewState_FileLocked
+        {
+            get { return (string)ViewState["FileLocked"]; }
+            set { ViewState["FileLocked"] = value; }
+        }
+
+        private string ViewState_RootDir
+        {
+            get { return (string)ViewState["RootDir"]; }
+            set { ViewState["RootDir"] = value; }
         }
 
         private string ViewState_Save
         {
             get { return (string)ViewState["Save"]; }
             set { ViewState["Save"] = value; }
+        }
+
+        private string ViewState_CloseFile
+        {
+            get { return (string)ViewState["CloseFile"]; }
+            set { ViewState["CloseFile"] = value; }
+        }
+
+        private string ViewState_Clear
+        {
+            get { return (string)ViewState["Clear"]; }
+            set { ViewState["Clear"] = value; }
         }
 
         private string ViewState_Undo

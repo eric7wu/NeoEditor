@@ -15,8 +15,10 @@ namespace NeoEditor
 
         public static class FilePatches
         {
-            public static void CreateTable()
+            public static void CreateTable(string sRootDir)
             {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+
                 string createTableSQL =
                 @"CREATE TABLE IF NOT EXISTS [FilePatchHistory] (
                     [Id] INTEGER PRIMARY KEY NOT NULL,
@@ -26,7 +28,7 @@ namespace NeoEditor
                     [ForwardPatch] TEXT NULL
                 )";
 
-                using (SQLiteConnection conn = new SQLiteConnection(m_ConnString))
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
                 {
                     try
                     {
@@ -41,8 +43,9 @@ namespace NeoEditor
                 }
             }
 
-            public static int Create(string FilePath, string Patch)
+            public static int Create(string sRootDir, string FilePath, string Patch)
             {
+                string sConnection = string.Format(m_ConnString, sRootDir);
                 int versionNo = 0;
                 bool patchExists = false;
                 string selectSQL1 = @"SELECT 1 FROM FilePatchHistory WHERE FilePath = @FilePath";
@@ -50,7 +53,7 @@ namespace NeoEditor
                 string insertSQL1 = @"INSERT INTO FilePatchHistory (FilePath, VersionNo) VALUES (@FilePath, 0)";
                 string insertSQL2 = @"INSERT INTO FilePatchHistory (FilePath, VersionNo, BackwardPatch) VALUES (@FilePath, @VersionNo, @Patch)";
 
-                using (SQLiteConnection conn = new SQLiteConnection(m_ConnString))
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
                 {
                     try
                     {
@@ -107,8 +110,9 @@ namespace NeoEditor
                 return versionNo;
             }
 
-            public static int Update(string FilePath, int VersionNo, string ForwardPatch)
+            public static int Update(string sRootDir, string FilePath, int VersionNo, string ForwardPatch)
             {
+                string sConnection = string.Format(m_ConnString, sRootDir);
                 int res = 0;
                 string updateSQL =
                 @"UPDATE FilePatchHistory 
@@ -116,7 +120,7 @@ namespace NeoEditor
 		          WHERE (FilePath = @FilePath) AND (VersionNo = @VersionNo)
                 ";
 
-                using (SQLiteConnection conn = new SQLiteConnection(m_ConnString))
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
                 {
                     try
                     {
@@ -137,8 +141,33 @@ namespace NeoEditor
                 return res;
             }
 
-            public static DataItem Get(string FilePath, int? VersionNo)
+            public static void Delete(string sRootDir, string FilePath)
             {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+                string deleteSQL =
+                @"DELETE FROM FilePatchHistory 
+		          WHERE FilePath = @FilePath
+                ";
+
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
+                {
+                    try
+                    {
+                        conn.Open();
+                        using (SQLiteCommand cmd = new SQLiteCommand(deleteSQL, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@FilePath", FilePath);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SQLiteException ex)
+                    { }
+                }
+            }
+
+            public static DataItem Get(string sRootDir, string FilePath, int? VersionNo)
+            {
+                string sConnection = string.Format(m_ConnString, sRootDir);
                 DataItem dItem = null;
                 string selectSQL1 = @"SELECT MAX(VersionNo) FROM FilePatchHistory WHERE FilePath = @FilePath";
                 string selectSQL2 =
@@ -150,7 +179,7 @@ namespace NeoEditor
                     (FilePath = @FilePath) AND (VersionNo = @VersionNo)
                 ";
 
-                using (SQLiteConnection conn = new SQLiteConnection(m_ConnString))
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
                 {
                     try
                     {
@@ -210,6 +239,112 @@ namespace NeoEditor
                 public int VersionNo { get; private set; }
                 public string BackwardPatch { get; private set; }
                 public string ForwardPatch { get; private set; }
+            }
+        }
+
+        public static class FileLocks
+        {
+            public static void CreateTable(string sRootDir)
+            {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+
+                string createTableSQL =
+                @"CREATE TABLE IF NOT EXISTS [FileLock] (
+                    [Id] INTEGER PRIMARY KEY NOT NULL,
+                    [FileName] VARCHAR(100) NOT NULL
+                )";
+
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
+                {
+                    try
+                    {
+                        conn.Open();
+                        using (SQLiteCommand cmd = new SQLiteCommand(createTableSQL, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SQLiteException ex)
+                    { }
+                }
+            }
+
+            public static void Create(string sRootDir, string FileName)
+            {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+                string insertSQL = @"INSERT INTO FileLock (FileName) VALUES (@FileName)";
+
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
+                {
+                    try
+                    {
+                        conn.Open();
+
+                        using (SQLiteCommand cmd = new SQLiteCommand(insertSQL, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@FileName", FileName);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SQLiteException ex)
+                    { }
+                }
+            }
+
+            public static void Delete(string sRootDir, string FileName)
+            {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+                string deleteSQL =
+                @"DELETE FROM FileLock 
+		          WHERE FileName = @FileName
+                ";
+
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
+                {
+                    try
+                    {
+                        conn.Open();
+                        using (SQLiteCommand cmd = new SQLiteCommand(deleteSQL, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@FileName", FileName);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SQLiteException ex)
+                    { }
+                }
+            }
+
+            public static bool Check(string sRootDir, string FileName)
+            {
+                string sConnection = string.Format(m_ConnString, sRootDir);
+                bool lockExists = false;
+                string selectSQL = @"SELECT 1 FROM FileLock WHERE FileName = @FileName";
+
+                using (SQLiteConnection conn = new SQLiteConnection(sConnection))
+                {
+                    try
+                    {
+                        conn.Open();
+
+                        using (SQLiteCommand cmd = new SQLiteCommand(selectSQL, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@FileName", FileName);
+                            using (SQLiteDataReader dr = cmd.ExecuteReader())
+                            {
+                                if (dr.Read())
+                                {
+                                    if (dr[0].GetType() != typeof(DBNull))
+                                        lockExists = true;
+                                }
+                            }
+                        }
+                    }
+                    catch (SQLiteException ex)
+                    { }
+                }
+
+                return lockExists;
             }
         }
     }

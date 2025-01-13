@@ -95,15 +95,15 @@ var labels = {
 			LabelQtyColName: null,
 			PageSplitKeyCol: null,
 			ReportPrepend: null,
-            ReportAppend: null,
-            PageSplitAppend: null,
-            PageAppend: null
+			ReportAppend: null,
+			PageSplitAppend: null,
+			PageAppend: null
         },
         children: ["Header", "Footer", "Fields"]
     },
     Header: {
         attrs: {
-            Height: null,
+			Height: null,
 			Border: null,
 			XPosition: null,
 			YPosition: null,
@@ -114,7 +114,7 @@ var labels = {
     },
     Footer: {
         attrs: {
-            Height: null,
+			Height: null,
 			Border: null,
 			XPosition: null,
 			YPosition: null,
@@ -182,7 +182,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById('txtFileContent'), 
     },
     mode: {name: mdt, globalVars: true, matchClosing: true, alignCDATA: true}
 });
-editor.setSize(null, '600') ;
+editor.setSize(null, '700') ;
 editor.setOption('indentUnit', 4);
 editor.setOption('indentWithTabs', true);
 if(ft=='.XML') editor.setOption('hintOptions', {schemaInfo: labels});
@@ -198,8 +198,24 @@ function printFile() {
     nw.close();
 }
 $("#btnPrint").click(function() { printFile(); });
-$("#btnClose").click(function() { window.close(); });
+$("#btnRefresh").click(function() { window.location.reload(); });
+$("#imgHelp").click(function() { ShowHideTip(this,'divInstructions'); });
+$("#divInstructions").click(function() { this.style.visibility='hidden'; });
 $("#btnOpen").click(function() { return validate(this.form); });
+$("#btnClose").click(function() {
+    if ($.trim($("#hdnFileName").val()) == "") window.close();
+    else alert("You need to close file before closing window");
+});
+$("#btnSave").click(function() {
+    var curFileName = $("#lblFilePath").text();
+    fileName = prompt("Save File As", curFileName);
+    if (fileName == null) {
+        return false;
+    } else {
+        $("#hdnFileName").val(fileName);
+        return true;
+    }
+});
 function ShowMsg(ctlId,errMsg){alert(errMsg);getelembyid(ctlId).focus();return false;}
 function getelembyid(i){return document.getElementById(i);}
 function validate(theform)
@@ -210,7 +226,32 @@ function validate(theform)
 		theform.target="_self";
 	else
 		theform.target="_blank";	
-	if(editfile.files.length === 0)
+	if(editfile.files.length === 0 && $("#ddlFiles").val() == '0')
 		return ShowMsg("uplTheFile","No File selected");
 	return true;
+}
+function ShowHideTip( SourceCtl, TipDivID )
+{
+    var div = document.getElementById( TipDivID );
+    if ((div.style.visibility==null) || (div.style.visibility=="hidden"))
+    {
+        div.style.visibility = "visible";
+    }
+    else
+    {
+        div.style.visibility = "hidden";
+    }
+    var x = 0, y = 0;
+    var obj = SourceCtl;
+    while( obj != null )	{
+        x += obj.offsetLeft;
+        obj = obj.offsetParent;
+    }
+    obj = SourceCtl;
+    while( obj != null )	{
+        y += obj.offsetTop;
+        obj = obj.offsetParent;
+    }
+    div.style.left = x;
+    div.style.top = y + SourceCtl.offsetHeight;
 }
