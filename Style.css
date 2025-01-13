@@ -1,0 +1,362 @@
+BODY 
+{
+	color: Black;
+	background-color:White;
+    border: 0px;   
+}
+* {
+    font-family:Verdana !important;
+    font-size:11px;
+    font-weight:normal;
+}
+.PageBodyTable {
+    padding-top: 0px;
+    padding-left: 0px;
+    width: 100%;
+}
+.PageBodyCell {
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 4px;
+    vertical-align: top;
+    border-width:0px;
+} 
+.PageContentTable {
+    width: 100%;
+}
+.PageContentCell {
+    vertical-align:top;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 8px;
+}
+.PageContentCell TD {
+}
+.PageContentCell TH {
+}
+
+.Btn
+{
+}
+
+.Btn_Large
+{
+	font-weight: bold; width: 72px; height: 32px;
+}
+
+.Btn_Primary
+{
+	color: #fff;
+	background-color: #337ab7;
+	border-color: #337ab7;
+	border-radius: 3px;
+}
+
+.Btn_Primary:hover { background-color: #326496; }
+
+.Btn_Primary:disabled { color: graytext; background-color: #dddddd; border-color: #dddddd; cursor: auto; }
+
+.Text {  }
+.ErrorText	{ color: #8b0000; font-weight: bold;}
+.FriendlyErrorText { color: Navy; }
+.ProgressText {display:inline; color:#2c5b85;  background-color:#DFE6EC;}
+
+.TextBox
+{
+	border: groove 1px black;
+}
+.TextBox_RightAligned
+{
+	border: groove 1px black;
+	text-align:right;
+}
+
+.WebControl
+{
+}
+.WebControl_floating
+{
+	border-style:ridge;
+	border-width:medium;
+	border-color:#ffffff;
+}
+
+.WebControl_RightAligned
+{
+	text-align:right;
+}
+
+select.WebControl:focus::-ms-value
+{
+	font-weight:bold;	
+	background-color:#d3d3d3;
+	color: #000;
+}
+
+select.WebControl:disabled
+{
+    color:#000;
+    background:#d3d3d3;
+}
+
+.WebControl option:hover
+{
+    color:#000;
+    background:#dcdcdc;
+}
+
+.WebControl option:checked
+{
+	font-weight:bold;
+	background-color:#d3d3d3;
+	color:#000;
+}
+
+.WebControl option:checked:hover
+{
+	font-weight:bold;
+	background-color:#d3d3d3;
+	color:#000;
+}
+
+.PageFrame
+{
+	border-bottom: solid 1px LightGrey;
+	margin: 0px;
+	padding: 0px;
+	font-weight:600;
+	z-index:300;
+}
+.PageFrame TH
+{
+	color: #1E4F82;
+	border-bottom: solid 1px LightGrey;
+	font-weight:600;
+}
+.PageFrame TD
+{
+}
+
+.Link
+{
+	float:right;
+	FONT-WEIGHT: normal;		
+	COLOR: #1e4f82;
+	padding-right: 8px;
+	text-decoration: none;
+}
+
+.Link:hover
+{
+	padding-right: 8px;
+	font-weight: bold;
+	color:#536378;
+}
+
+LABEL.Icon .Btn 
+{
+	padding: 5px 5px 5px 25px;
+	visibility: visible;
+}
+
+LABEL.Icon .Btn_Primary 
+{
+	padding: 5px 5px 5px 25px;
+	visibility: visible;
+}
+
+LABEL.Icon 
+{
+	visibility: hidden;
+}
+
+.Icon 
+{
+	position: relative;
+}
+
+LABEL.IconSmall .Btn 
+{
+	padding: 2px 2px 2px 15px;
+	visibility: visible;
+}
+
+LABEL.IconSmall 
+{
+	visibility: hidden;
+}
+
+.IconSmall 
+{
+	position: relative;
+}
+
+.Icon_Excel:before, .Icon_Login_Toggle:before, .Icon_Display_Toggle:before, .Icon_Display:before, .Icon_Add_Toggle:before, 
+.Icon_Add:before, .Icon_Edit_Toggle:before, .Icon_Edit:before, .Icon_Delete_Toggle:before, .Icon_Delete:before, .Icon_Close_Toggle:before, 
+.Icon_Done_Toggle:before, .Icon_Done:before, .Icon_Reset:before, .Icon_Save_Toggle:before, .Icon_Save:before, .Icon_Cancel:before, 
+.Icon_Undo:before, .Icon_Redo:before, .Icon_Filter:before, .Icon_Print_Toggle:before, .Icon_Print:before, .Icon_Update_Toggle:before, 
+.Icon_Update:before, .Icon_Upload_Toggle:before, .Icon_Upload:before, .Icon_Exec_Toggle:before, .Icon_Exec:before, .Icon_Logout:before   
+{
+	content: "";
+	position: absolute;
+	left: 8px;  top: 0;  bottom: 0;  width: 20px;
+	visibility: visible;
+}
+
+.Icon_Excel:before 
+{
+	background: url("images/excel.svg") center / 65% no-repeat;
+}
+
+.Icon_Login_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/lock.svg") center / 65% no-repeat;
+}
+
+.Icon_Display_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/search.svg") center / 65% no-repeat;
+}
+
+.Icon_Display:before 
+{
+	background: url("images/search.svg") center / 65% no-repeat;
+}
+
+.Icon_Add_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/plus.svg") center / 65% no-repeat;
+}
+
+.Icon_Add:before
+{
+	background: url("images/plus.svg") center / 65% no-repeat;
+}
+
+.Icon_Edit_Toggle:before
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/edit.svg") center / 65% no-repeat;
+}
+
+.Icon_Edit:before
+{
+	background: url("images/edit.svg") center / 65% no-repeat;
+}
+
+.Icon_Delete_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/delete.svg") center / 65% no-repeat;
+}
+
+.Icon_Delete:before
+{
+	background: url("images/delete.svg") center / 65% no-repeat;
+}
+
+.Icon_Close_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/cancel.svg") center / 65% no-repeat;
+}
+
+.Icon_Done_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/done.svg") center / 65% no-repeat;
+}
+
+.Icon_Done:before 
+{
+	background: url("images/done.svg") center / 65% no-repeat;
+}
+
+.Icon_Reset:before 
+{
+	background: url("images/reset.svg") center / 65% no-repeat;
+}
+
+.Icon_Save_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/check.svg") center / 65% no-repeat;
+}
+
+.Icon_Save:before 
+{
+	background: url("images/check.svg") center / 65% no-repeat;
+}
+
+.Icon_Cancel:before 
+{
+	background: url("images/cancel.svg") center / 65% no-repeat;
+}
+
+.Icon_Undo:before 
+{
+	background: url("images/undo.svg") center / 65% no-repeat;
+}
+
+.Icon_Redo:before 
+{
+	background: url("images/redo.svg") center / 65% no-repeat;
+}
+
+.Icon_Filter:before 
+{
+	left: 5px;  top: 0;  bottom: 0;  width: 15px;
+	background: url("images/filter.svg") center / 55% no-repeat;
+}
+
+.Icon_Print_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/print.svg") center / 65% no-repeat;
+}
+
+.Icon_Print:before 
+{
+	background: url("images/print.svg") center / 65% no-repeat;
+}
+
+.Icon_Update_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/update.svg") center / 65% no-repeat;
+}
+
+.Icon_Update:before 
+{
+	background: url("images/update.svg") center / 65% no-repeat;
+}
+
+.Icon_Upload_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/upload.svg") center / 65% no-repeat;
+}
+
+.Icon_Upload:before 
+{
+	background: url("images/upload.svg") center / 65% no-repeat;
+}
+
+.Icon_Exec_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/exec.svg") center / 60% no-repeat;
+}
+
+.Icon_Exec:before 
+{
+	background: url("images/exec.svg") center / 60% no-repeat;
+}
+
+.Icon_Logout:before 
+{
+	background: url("images/logout.svg") center / 65% no-repeat;
+}
