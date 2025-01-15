@@ -14,7 +14,7 @@
 		<script src="<%=PathTojQuery%>"></script>
 		<script src="<%=PathTojQueryUi%>"></script>
 		<script src='<%=PathToCodemirrorJs%>'></script>
-		<script src="<%=PathToCodemirrorContinuelistJs%>"></script>
+        <script src="<%=PathToCodemirrorContinuelistJs%>"></script>
 		<script src="<%=PathToCodemirrorXmlJs%>"></script>
 		<script src="<%=PathToCodemirrorJsJs%>"></script>
 		<script src='<%=PathToCodemirrorHintJs%>'></script>
@@ -25,6 +25,12 @@
 		<script src='<%=PathToCodemirrorSearchJs%>'></script>
 		<script src='<%=PathToCodemirrorHtmlHintJs%>'></script>
 		<script src='<%=PathToCodemirrorAnywordHintJs%>'></script>
+        <script src="<%=PathToCodemirrorClikeJs%>"></script>
+        <script src="<%=PathToCodemirrorPythonJs%>"></script>
+        <script src="<%=PathToCodemirrorPhpJs%>"></script>
+        <script src="<%=PathToCodemirrorPerlJs%>"></script>
+        <script src="<%=PathToCodemirrorCssJs%>"></script>
+        <script src='<%=PathToCodemirrorCssHintJs%>'></script>
 		<style>.CodeMirror { border: 1px solid #000; }</style>
 	</HEAD>
 	<body>
@@ -47,7 +53,7 @@
 							            <asp:label id="lblSaveAndClose" AssociatedControlId="chkSaveAndClose" runat="server"></asp:label>&nbsp;&nbsp;&nbsp;
                                         <div style="float:right;">
                                             <label class="Icon Icon_Refresh">i<INPUT id="btnRefresh" class="Btn" type="button" size="20" value="Refresh" runat="server"></label>&nbsp;
-                                            <label class="Icon Icon_Cancel">i<INPUT id="btnClose" class="Btn" type="button" size="20" value="Close Window" runat="server"></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <label class="Icon Icon_Cancel">i<INPUT id="btnClose" class="Btn" type="button" size="20" value="Close Window" runat="server"></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 										</div>
                                         <INPUT type="hidden" id="hdnFileName" runat="server">
 									    <INPUT type="hidden" id="hdnFileType" runat="server">
@@ -57,6 +63,7 @@
                                 <TR>
                                     <TD>
                                         <label class="Icon Icon_Close">i<asp:button id="btnCloseFile" CssClass="Btn" Text="Close File" runat="server"></asp:button></label>&nbsp;
+                                        <label class="Icon Icon_Download">i<asp:button id="btnDownloadFile" CssClass="Btn" Text="Download File" runat="server"></asp:button></label>&nbsp;
                                         <label class="Icon Icon_Undo">i<asp:button id="btnUndo" CssClass="Btn" Text="Undo" runat="server"></asp:button></label>&nbsp;
 										<label class="Icon Icon_Redo">i<asp:button id="btnRedo" CssClass="Btn" Text="Redo" runat="server"></asp:button></label>&nbsp;
                                         <label class="Icon Icon_Clear">i<asp:button id="btnClear" CssClass="Btn" Text="Clear Change History" runat="server"></asp:button></label>&nbsp;
@@ -76,8 +83,8 @@
 							    <tr>
 							        <td>
 							        <asp:label id="lblFileName" runat="server"></asp:label>&nbsp;
-							        <asp:label id="lblFilePath" runat="server"></asp:label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-							        <asp:label id="lblChangeCount" runat="server"></asp:label>
+							        <asp:label id="lblFilePath" CssClass="TitleText" runat="server"></asp:label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							        <asp:label id="lblChangeCount" CssClass="TitleText" runat="server"></asp:label>
 							        </td>
                                     <td></td>
 							    </tr>

@@ -27,6 +27,12 @@ namespace NeoEditor
         private const string PATH_TO_CODEMIRROR_JS_HINT_JS = "PATH_TO_CODEMIRROR_JS_HINT_JS";
         private const string PATH_TO_CODEMIRROR_HTML_HINT_JS = "PATH_TO_CODEMIRROR_HTML_HINT_JS";
         private const string PATH_TO_CODEMIRROR_ANYWORD_HINT_JS = "PATH_TO_CODEMIRROR_ANYWORD_HINT_JS";
+        private const string PATH_TO_CODEMIRROR_CLIKE_JS = "PATH_TO_CODEMIRROR_CLIKE_JS";
+        private const string PATH_TO_CODEMIRROR_PYTHON_JS = "PATH_TO_CODEMIRROR_PYTHON_JS";
+        private const string PATH_TO_CODEMIRROR_PHP_JS = "PATH_TO_CODEMIRROR_PHP_JS";
+        private const string PATH_TO_CODEMIRROR_PERL_JS = "PATH_TO_CODEMIRROR_PERL_JS";
+        private const string PATH_TO_CODEMIRROR_CSS_JS = "PATH_TO_CODEMIRROR_CSS_JS";
+        private const string PATH_TO_CODEMIRROR_CSS_HINT_JS = "PATH_TO_CODEMIRROR_CSS_HINT_JS";
 
 		private static string GetSetting(string IN_sKey) {
 			string sResult = System.Web.Configuration.WebConfigurationManager.AppSettings[IN_sKey];
@@ -54,6 +60,12 @@ namespace NeoEditor
         public static string PathToCodemirrorJsHintJs { get { return GetSetting(PATH_TO_CODEMIRROR_JS_HINT_JS); } }
         public static string PathToCodemirrorHtmlHintJs { get { return GetSetting(PATH_TO_CODEMIRROR_HTML_HINT_JS); } }
         public static string PathToCodemirrorAnywordHintJs { get { return GetSetting(PATH_TO_CODEMIRROR_ANYWORD_HINT_JS); } }
+        public static string PathToCodemirrorClikeJs { get { return GetSetting(PATH_TO_CODEMIRROR_CLIKE_JS); } }
+        public static string PathToCodemirrorPythonJs { get { return GetSetting(PATH_TO_CODEMIRROR_PYTHON_JS); } }
+        public static string PathToCodemirrorPhpJs { get { return GetSetting(PATH_TO_CODEMIRROR_PHP_JS); } }
+        public static string PathToCodemirrorPerlJs { get { return GetSetting(PATH_TO_CODEMIRROR_PERL_JS); } }
+        public static string PathToCodemirrorCssJs { get { return GetSetting(PATH_TO_CODEMIRROR_CSS_JS); } }
+        public static string PathToCodemirrorCssHintJs { get { return GetSetting(PATH_TO_CODEMIRROR_CSS_HINT_JS); } }
 
 		public static string FilesDir
 		{ 

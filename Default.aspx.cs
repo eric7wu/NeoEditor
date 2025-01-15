@@ -30,6 +30,7 @@ namespace NeoEditor
         protected System.Web.UI.WebControls.Button btnUndo;
         protected System.Web.UI.WebControls.Button btnRedo;
         protected System.Web.UI.WebControls.Button btnCloseFile;
+        protected System.Web.UI.WebControls.Button btnDownloadFile;
         protected System.Web.UI.WebControls.Button btnClear;
         protected System.Web.UI.HtmlControls.HtmlGenericControl divEditFile;
         protected System.Web.UI.WebControls.TextBox txtFileContent;
@@ -69,6 +70,7 @@ namespace NeoEditor
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             this.btnCloseFile.Click += new System.EventHandler(this.btnCloseFile_Click);
+            this.btnDownloadFile.Click += new System.EventHandler(this.btnDownloadFile_Click);
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
@@ -192,6 +194,7 @@ namespace NeoEditor
                     ViewState_UndoPatch = filepatch.BackwardPatch;
                     ViewState_RedoPatch = filepatch.ForwardPatch;
                 }
+                lblChangeCount.Text = "Version " + (ViewState_VersionNo + 1).ToString() + " out of " + (ViewState_VersionNo + 1).ToString();
             }
             catch (System.Exception ex)
             {
@@ -209,6 +212,7 @@ namespace NeoEditor
                 if (errMsg != ViewState_FileLocked) Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
                 lblFilePath.Text = string.Empty;
                 hdnFileName.Value = string.Empty;
+                lblChangeCount.Text = string.Empty;
                 lblError.Text = errMsg;
                 lblError.Visible = true;
                 hdnOwnLock.Value = "0";
@@ -291,6 +295,7 @@ namespace NeoEditor
                     Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
                     lblFilePath.Text = string.Empty;
                     hdnFileName.Value = string.Empty;
+                    lblChangeCount.Text = string.Empty;
                     hdnOwnLock.Value = "0";
                 }
                 else
@@ -317,6 +322,7 @@ namespace NeoEditor
                         Data.FileLocks.Create(ViewState_RootDir, hdnFileName.Value);
                     }
                     lblFilePath.Text = hdnFileName.Value;
+                    lblChangeCount.Text = "Version " + (ViewState_VersionNo + 1).ToString() + " out of " + (ViewState_VersionNo + 1).ToString();
                 }
             }
         }
@@ -332,6 +338,28 @@ namespace NeoEditor
             lblFilePath.Text = string.Empty;
             hdnFileName.Value = string.Empty;
             hdnOwnLock.Value = "0";
+        }
+
+        private void btnDownloadFile_Click(object sender, System.EventArgs e)
+        {
+            string sFileName = lblFilePath.Text;
+
+            if (sFileName.HasValue())
+            {
+                try
+                {
+                    string contentText = txtFileContent.Text;
+                    Response.ClearContent();
+                    Response.ClearHeaders();
+                    Response.ContentType = "text/plain";
+                    Response.AddHeader("Content-disposition", "attachment;filename=" + sFileName);
+                    Response.Write(contentText);
+                    Response.Flush();
+                    Response.End();
+                }
+                catch (System.Threading.ThreadAbortException ex) { }
+                catch (System.Exception ex) { }
+            }
         }
 
         private void btnClear_Click(object sender, System.EventArgs e)
@@ -363,8 +391,6 @@ namespace NeoEditor
                 List<Patch> patches = dmp.patch_fromText(ViewState_UndoPatch);
                 Object[] results = dmp.patch_apply(patches, ViewState_FileContent);
                 txtFileContent.Text = results[0].ToString();
-                bool[] bArray = (bool[])results[1];
-                lblChangeCount.Text = "Undo Changes: " + bArray.Length.ToString();
 
                 ViewState_VersionNo--;
                 ViewState_FileContent = txtFileContent.Text;
@@ -381,10 +407,8 @@ namespace NeoEditor
                     ViewState_UndoPatch = filepatch.BackwardPatch;
                     ViewState_RedoPatch = filepatch.ForwardPatch;
                 }
-            }
-            else
-            {
-                lblChangeCount.Text = "Undo Changes: 0";
+                filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, null);
+                lblChangeCount.Text = "Version " + (ViewState_VersionNo + 1).ToString() + " out of " + (filepatch.VersionNo + 1).ToString();
             }
         }
 
@@ -402,8 +426,6 @@ namespace NeoEditor
                 List<Patch> patches = dmp.patch_fromText(ViewState_RedoPatch);
                 Object[] results = dmp.patch_apply(patches, ViewState_FileContent);
                 txtFileContent.Text = results[0].ToString();
-                bool[] bArray = (bool[])results[1];
-                lblChangeCount.Text = "Redo Changes: " + bArray.Length.ToString();
 
                 ViewState_VersionNo++;
                 ViewState_FileContent = txtFileContent.Text;
@@ -411,10 +433,9 @@ namespace NeoEditor
                 ViewState_VersionNo = filepatch.VersionNo;
                 ViewState_UndoPatch = filepatch.BackwardPatch;
                 ViewState_RedoPatch = filepatch.ForwardPatch;
-            }
-            else
-            {
-                lblChangeCount.Text = "Redo Changes: 0";
+
+                filepatch = Data.FilePatches.Get(ViewState_RootDir, sFileName, null);
+                lblChangeCount.Text = "Version " + (ViewState_VersionNo + 1).ToString() + " out of " + (filepatch.VersionNo + 1).ToString();
             }
         }
 
@@ -423,6 +444,7 @@ namespace NeoEditor
             m_PageTitle = "Edit File";
             ViewState_Save = "Save";
             ViewState_CloseFile = "Close File";
+            ViewState_DownloadFile = "Download File";
             ViewState_Clear = "Clear Change History";
             ViewState_Undo = "Undo";
             ViewState_Redo = "Redo";
@@ -433,6 +455,7 @@ namespace NeoEditor
             btnClose.Value = "Close Window";
             btnSave.Text = ViewState_Save;
             btnCloseFile.Text = ViewState_CloseFile;
+            btnDownloadFile.Text = ViewState_DownloadFile;
             btnClear.Text = ViewState_Clear;
             btnUndo.Text = ViewState_Undo;
             btnRedo.Text = ViewState_Redo;
@@ -497,6 +520,12 @@ namespace NeoEditor
         {
             get { return (string)ViewState["CloseFile"]; }
             set { ViewState["CloseFile"] = value; }
+        }
+
+        private string ViewState_DownloadFile
+        {
+            get { return (string)ViewState["DownloadFile"]; }
+            set { ViewState["DownloadFile"] = value; }
         }
 
         private string ViewState_Clear
@@ -630,6 +659,36 @@ namespace NeoEditor
         public string PathToCodemirrorSearchJs
         {
             get { return Config.PathToCodemirrorSearchJs; }
+        }
+
+        public string PathToCodemirrorClikeJs
+        {
+            get { return Config.PathToCodemirrorClikeJs; }
+        }
+
+        public string PathToCodemirrorPythonJs
+        {
+            get { return Config.PathToCodemirrorPythonJs; }
+        }
+
+        public string PathToCodemirrorPhpJs
+        {
+            get { return Config.PathToCodemirrorPhpJs; }
+        }
+
+        public string PathToCodemirrorPerlJs
+        {
+            get { return Config.PathToCodemirrorPerlJs; }
+        }
+
+        public string PathToCodemirrorCssJs
+        {
+            get { return Config.PathToCodemirrorCssJs; }
+        }
+
+        public string PathToCodemirrorCssHintJs
+        {
+            get { return Config.PathToCodemirrorCssHintJs; }
         }
 
         public string PathTojQuery

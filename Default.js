@@ -1,12 +1,35 @@
 var ft = getelembyid('hdnFileType').value;
 var mdt;
 switch(ft) {
+    case '.C':
+    case '.CC':
+    case '.CPP':
+    case '.CS':
+    case '.JAVA':
+    case '.M':
+    case '.H':
+        mdt = 'clike';
+        break;
+    case '.PY':
+        mdt = 'pl';
+        break;
+    case '.PHP':
+        mdt = 'php';
+        break;
+    case '.PL':
+        mdt = 'perl';
+        break;
     case '.XML':
         mdt = 'xml';
         break;
+    case '.JS':
+        mdt = 'javascript';
+        break;
+    case '.CSS':
+        mdt = 'css';
+        break;
     case '.XSLT':
     case '.HTML':
-    case '.CSS':
         mdt = 'text/html';
         break;
     default:
@@ -95,15 +118,15 @@ var labels = {
 			LabelQtyColName: null,
 			PageSplitKeyCol: null,
 			ReportPrepend: null,
-			ReportAppend: null,
-			PageSplitAppend: null,
-			PageAppend: null
+            ReportAppend: null,
+            PageSplitAppend: null,
+            PageAppend: null
         },
         children: ["Header", "Footer", "Fields"]
     },
     Header: {
         attrs: {
-			Height: null,
+            Height: null,
 			Border: null,
 			XPosition: null,
 			YPosition: null,
@@ -114,7 +137,7 @@ var labels = {
     },
     Footer: {
         attrs: {
-			Height: null,
+            Height: null,
 			Border: null,
 			XPosition: null,
 			YPosition: null,
@@ -159,14 +182,16 @@ CodeMirror.commands.autocomplete = function(cm) {
             break;
         case '.XSLT':
         case '.HTML':
-        case '.CSS':
             CodeMirror.showHint(cm, CodeMirror.hint.html);
             break;
-        case '.JSON':
-            CodeMirror.showHint(cm, CodeMirror.hint.anyword);
+        case '.JS':
+            CodeMirror.showHint(cm, CodeMirror.hint.javascript);
+            break;
+        case '.CSS':
+            CodeMirror.showHint(cm, CodeMirror.hint.css);
             break;
         default:
-            CodeMirror.showHint(cm, CodeMirror.hint.javascript);
+            CodeMirror.showHint(cm, CodeMirror.hint.anyword);
     }
 }
 var editor = CodeMirror.fromTextArea(document.getElementById('txtFileContent'), {
