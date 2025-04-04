@@ -31,17 +31,21 @@ namespace NeoEditor
         protected System.Web.UI.WebControls.Button btnRedo;
         protected System.Web.UI.WebControls.Button btnCloseFile;
         protected System.Web.UI.WebControls.Button btnDownloadFile;
+        protected System.Web.UI.WebControls.Button btnDeleteFile;
         protected System.Web.UI.WebControls.Button btnClear;
         protected System.Web.UI.HtmlControls.HtmlGenericControl divEditFile;
         protected System.Web.UI.WebControls.TextBox txtFileContent;
         protected System.Web.UI.WebControls.Literal ltInstructions;
         protected System.Web.UI.HtmlControls.HtmlInputButton btnPrint;
+        protected System.Web.UI.HtmlControls.HtmlInputButton btnExec;
+        protected System.Web.UI.HtmlControls.HtmlInputButton btnView;
         protected System.Web.UI.HtmlControls.HtmlInputButton btnRefresh;
         protected System.Web.UI.HtmlControls.HtmlInputButton btnClose;
         protected System.Web.UI.HtmlControls.HtmlInputHidden hdnFileName;
         protected System.Web.UI.HtmlControls.HtmlInputHidden hdnFileType;
         protected System.Web.UI.HtmlControls.HtmlInputHidden hdnOwnLock;
         protected System.Web.UI.WebControls.FileUpload uplTheFile;
+        protected System.Web.UI.HtmlControls.HtmlGenericControl btnBrowse;
         protected System.Web.UI.WebControls.Button btnOpen;
         protected System.Web.UI.WebControls.CheckBox chkEditInline;
         protected System.Web.UI.WebControls.Label lblEditInline;
@@ -50,6 +54,9 @@ namespace NeoEditor
         protected System.Web.UI.WebControls.Label lblFiles;
         protected System.Web.UI.WebControls.DropDownList ddlFiles;
         protected System.Web.UI.HtmlControls.HtmlGenericControl divInstructions;
+        protected System.Web.UI.HtmlControls.HtmlGenericControl divRunResults;
+        protected System.Web.UI.HtmlControls.HtmlGenericControl divViewFile;
+        protected System.Web.UI.HtmlControls.HtmlImage imgLock;
 
         #region Web Form Designer generated code
         override protected void OnInit(EventArgs e)
@@ -71,6 +78,7 @@ namespace NeoEditor
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             this.btnCloseFile.Click += new System.EventHandler(this.btnCloseFile_Click);
             this.btnDownloadFile.Click += new System.EventHandler(this.btnDownloadFile_Click);
+            this.btnDeleteFile.Click += new System.EventHandler(this.btnDeleteFile_Click);
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
@@ -84,6 +92,9 @@ namespace NeoEditor
             {
                 Localize();
                 divInstructions.Attributes["style"] = "visibility:hidden";
+                divRunResults.Attributes["style"] = "visibility:hidden";
+                divViewFile.Attributes["style"] = "visibility:hidden";
+                imgLock.Attributes["style"] = "visibility:hidden";
 
                 Data.FilePatches.CreateTable(ViewState_RootDir);
                 Data.FileLocks.CreateTable(ViewState_RootDir);
@@ -98,6 +109,7 @@ namespace NeoEditor
                 }
 
                 ddlFiles.SelectedValue = "0";
+                chkEditInline.Checked = true;
             }
         }
 
@@ -115,10 +127,13 @@ namespace NeoEditor
                 if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
                 {
                     ShowErrorMessage(ViewState_FileLocked);
-                    return;
                 }
                 else
                 {
+                    btnSave.Enabled = true;
+                    btnDeleteFile.Enabled = true;
+                    btnClear.Enabled = true;
+                    imgLock.Attributes["style"] = "visibility:hidden";
                     hdnOwnLock.Value = "1";
                     Data.FileLocks.Create(ViewState_RootDir, sFileName);
                 }
@@ -127,6 +142,10 @@ namespace NeoEditor
             {
                 if (!File.Exists(Server.MapPath(Config.FilesDir) + sFileName))
                 {
+                    btnSave.Enabled = true;
+                    btnDeleteFile.Enabled = true;
+                    btnClear.Enabled = true;
+                    imgLock.Attributes["style"] = "visibility:hidden";
                     hdnOwnLock.Value = "1";
                     Data.FileLocks.Create(ViewState_RootDir, sFileName);
                 }
@@ -135,10 +154,13 @@ namespace NeoEditor
                     if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
                     {
                         ShowErrorMessage(ViewState_FileLocked);
-                        return;
                     }
                     else
                     {
+                        btnSave.Enabled = true;
+                        btnDeleteFile.Enabled = true;
+                        btnClear.Enabled = true;
+                        imgLock.Attributes["style"] = "visibility:hidden";
                         hdnOwnLock.Value = "1";
                         Data.FileLocks.Create(ViewState_RootDir, sFileName);
                     }
@@ -207,15 +229,26 @@ namespace NeoEditor
         {
             if (errMsg.HasValue())
             {
-                ddlFiles.SelectedValue = "0";
-                txtFileContent.Text = string.Empty;
-                if (errMsg != ViewState_FileLocked) Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
-                lblFilePath.Text = string.Empty;
-                hdnFileName.Value = string.Empty;
-                lblChangeCount.Text = string.Empty;
-                lblError.Text = errMsg;
-                lblError.Visible = true;
-                hdnOwnLock.Value = "0";
+                if (errMsg != ViewState_FileLocked)
+                {
+                    ddlFiles.SelectedValue = "0";
+                    txtFileContent.Text = string.Empty;
+                    Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+                    lblFilePath.Text = string.Empty;
+                    hdnFileName.Value = string.Empty;
+                    lblChangeCount.Text = string.Empty;
+                    lblError.Text = errMsg;
+                    lblError.Visible = true;
+                    hdnOwnLock.Value = "0";
+                }
+                else
+                {
+                    btnSave.Enabled = false;
+                    btnDeleteFile.Enabled = false;
+                    btnClear.Enabled = false;
+                    imgLock.Attributes["style"] = "visibility:visible";
+                    hdnOwnLock.Value = "0";
+                }
             }
         }
 
@@ -223,6 +256,12 @@ namespace NeoEditor
         {
             lblError.Text = string.Empty;
             lblError.Visible = false;
+            lblChangeCount.Text = string.Empty;
+            txtFileContent.Text = string.Empty;
+            Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+            lblFilePath.Text = string.Empty;
+            hdnFileName.Value = string.Empty;
+            hdnOwnLock.Value = "0";
 
             DisplayFileContents();
         }
@@ -334,10 +373,14 @@ namespace NeoEditor
             lblChangeCount.Text = string.Empty;
             ddlFiles.SelectedValue = "0";
             txtFileContent.Text = string.Empty;
-            Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
+            if (hdnOwnLock.Value != "0") Data.FileLocks.Delete(ViewState_RootDir, lblFilePath.Text);
             lblFilePath.Text = string.Empty;
             hdnFileName.Value = string.Empty;
             hdnOwnLock.Value = "0";
+            btnSave.Enabled = true;
+            btnDeleteFile.Enabled = true;
+            btnClear.Enabled = true;
+            imgLock.Attributes["style"] = "visibility:hidden";
         }
 
         private void btnDownloadFile_Click(object sender, System.EventArgs e)
@@ -362,10 +405,53 @@ namespace NeoEditor
             }
         }
 
+        private void btnDeleteFile_Click(object sender, System.EventArgs e)
+        {
+            string sFileName = string.Empty;
+
+            if (ddlFiles.SelectedValue != "0")
+            {
+                sFileName = ddlFiles.SelectedValue;
+                if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
+                {
+                    ShowErrorMessage(ViewState_FileLocked);
+                    return;
+                }
+            }
+
+            if (sFileName.HasValue())
+            {
+                try
+                {
+                    sFileName = Server.MapPath(Config.FilesDir) + sFileName;
+                    if (System.IO.File.Exists(sFileName))
+                    {
+                        System.IO.File.Delete(sFileName);
+                        Data.FileLocks.Delete(ViewState_RootDir, sFileName);
+                        Data.FilePatches.Delete(ViewState_RootDir, sFileName);
+                        ddlFiles.Items.Remove(ddlFiles.Items.FindByValue(ddlFiles.SelectedValue));
+                        ddlFiles.SelectedValue = "0";
+                        lblError.Text = string.Empty;
+                        lblError.Visible = false;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    ShowErrorMessage(ex.Message);
+                }
+            }
+        }
+
         private void btnClear_Click(object sender, System.EventArgs e)
         {
             string sFileName = hdnFileName.Value;
             sFileName = Server.MapPath(Config.FilesDir) + sFileName;
+
+            if (Data.FileLocks.Check(ViewState_RootDir, sFileName))
+            {
+                ShowErrorMessage(ViewState_FileLocked);
+                return;
+            }
 
             try
             {
@@ -441,21 +527,25 @@ namespace NeoEditor
 
         private void Localize()
         {
-            m_PageTitle = "Edit File";
+            m_PageTitle = "NeoEditor a next-generation AI-powered text editor";
             ViewState_Save = "Save";
             ViewState_CloseFile = "Close File";
             ViewState_DownloadFile = "Download File";
+            ViewState_DeleteFile = "Delete File";
             ViewState_Clear = "Clear Change History";
             ViewState_Undo = "Undo";
             ViewState_Redo = "Redo";
 
             btnOpen.Text = "Open";
             btnPrint.Value = "Print";
+            btnExec.Value = "Run JavaScript code snippet";
+            btnView.Value = "View Markdown File";
             btnRefresh.Value = "Refresh";
             btnClose.Value = "Close Window";
             btnSave.Text = ViewState_Save;
             btnCloseFile.Text = ViewState_CloseFile;
             btnDownloadFile.Text = ViewState_DownloadFile;
+            btnDeleteFile.Text = ViewState_DeleteFile;
             btnClear.Text = ViewState_Clear;
             btnUndo.Text = ViewState_Undo;
             btnRedo.Text = ViewState_Redo;
@@ -468,7 +558,7 @@ namespace NeoEditor
             ViewState_InvalidFileType = "Please specify an xml, xslt or json file to edit.";
             ViewState_FileNotExist = "File \"{0}\" doesn't exist.";
             ViewState_InvalidFileToSave = "Please specify a file to save.";
-            ViewState_FileLocked = "File is locked for editing by another user.";
+            ViewState_FileLocked = "File is locked for editing by another user";
             ViewState_RootDir = Server.MapPath("~");
 
             hdnOwnLock.Value = "0";
@@ -526,6 +616,12 @@ namespace NeoEditor
         {
             get { return (string)ViewState["DownloadFile"]; }
             set { ViewState["DownloadFile"] = value; }
+        }
+
+        private string ViewState_DeleteFile
+        {
+            get { return (string)ViewState["DeleteFile"]; }
+            set { ViewState["DeleteFile"] = value; }
         }
 
         private string ViewState_Clear
@@ -611,6 +707,16 @@ namespace NeoEditor
             get { return Config.PathToCodemirrorContinuelistJs; }
         }
 
+        public string PathToCodemirrorHtmlmixedJs
+        {
+            get { return Config.PathToCodemirrorHtmlmixedJs; }
+        }
+
+        public string PathToCodemirrorHtmlembeddedJs
+        {
+            get { return Config.PathToCodemirrorHtmlembeddedJs; }
+        }
+
         public string PathToCodemirrorXmlJs
         {
             get { return Config.PathToCodemirrorXmlJs; }
@@ -681,6 +787,11 @@ namespace NeoEditor
             get { return Config.PathToCodemirrorPerlJs; }
         }
 
+        public string PathToCodemirrorMdJs
+        {
+            get { return Config.PathToCodemirrorMdJs; }
+        }
+
         public string PathToCodemirrorCssJs
         {
             get { return Config.PathToCodemirrorCssJs; }
@@ -689,6 +800,21 @@ namespace NeoEditor
         public string PathToCodemirrorCssHintJs
         {
             get { return Config.PathToCodemirrorCssHintJs; }
+        }
+
+        public string PathToGoogleFontLinkIcon1
+        {
+            get { return Config.PathToGoogleFontLinkIcon1; }
+        }
+
+        public string PathToGoogleFontLinkIcon2
+        {
+            get { return Config.PathToGoogleFontLinkIcon2; }
+        }
+
+        public string PathToShowdownJs
+        {
+            get { return Config.PathToShowdownJs; }
         }
 
         public string PathTojQuery

@@ -1,14 +1,20 @@
+/* Import Google font - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
 BODY 
 {
 	color: Black;
-	background-color:White;
+	background-color: #E3F2FD;
     border: 0px;   
 }
+
 * {
-    font-family:Verdana !important;
-    font-size:11px;
-    font-weight:normal;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
+
 .PageBodyTable {
     padding-top: 0px;
     padding-left: 0px;
@@ -39,6 +45,10 @@ BODY
 {
 }
 
+.Btn_Hidden {
+    display: none;
+}
+
 .Btn_Large
 {
 	font-weight: bold; width: 72px; height: 32px;
@@ -47,9 +57,11 @@ BODY
 .Btn_Primary
 {
 	color: #fff;
-	background-color: #337ab7;
-	border-color: #337ab7;
+    background-color: #724ae8;
+	border-color: #724ae8;
 	border-radius: 3px;
+    width: fit-content;
+    display: inline-block;
 }
 
 .Btn_Primary:hover { background-color: #326496; }
@@ -88,19 +100,6 @@ BODY
 	text-align:right;
 }
 
-select.WebControl:focus::-ms-value
-{
-	font-weight:bold;	
-	background-color:#d3d3d3;
-	color: #000;
-}
-
-select.WebControl:disabled
-{
-    color:#000;
-    background:#d3d3d3;
-}
-
 .WebControl option:hover
 {
     color:#000;
@@ -127,7 +126,7 @@ select.WebControl:disabled
 	margin: 0px;
 	padding: 0px;
 	font-weight:600;
-	z-index:300;
+	z-index:100;
 }
 .PageFrame TH
 {
@@ -145,11 +144,44 @@ select.WebControl:disabled
 {
 	padding: 4px;
 	border: solid 1px Navy;
-	background-color: PaleGoldenrod;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #724ae8, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 10s ease infinite;
+	color: White;
+	position: absolute;
+	cursor: pointer; 
+    font-weight: 600;
+    z-index:300;
+}
+
+.FloatingConsole
+{
+    width: 600px;
+	padding: 5px;
+	border: solid 2px Navy;
+    background-color: White;
 	color: Navy;
 	position: absolute;
 	cursor: pointer; 
     font-weight: 600;
+    z-index:500;
+}
+
+.FloatingConsoleFrame
+{
+	width: 100%;
+    height: 300px;
+	border: solid 2px Black;
+	position: relative;
+}
+
+.FloatingView
+{
+    background-color: White;
+	border: solid 8px #724ae8;
+	position: absolute;
+	cursor: pointer; 
+    z-index:300;
 }
 
 .Link
@@ -210,7 +242,8 @@ LABEL.IconSmall
 .Icon_Clear:before, .Icon_Add:before, .Icon_Edit_Toggle:before, .Icon_Edit:before, .Icon_Delete_Toggle:before, .Icon_Delete:before,
 .Icon_Close:before, .Icon_Download:before, .Icon_Refresh:before, .Icon_Save_Toggle:before, .Icon_Save:before, .Icon_Cancel:before, 
 .Icon_Undo:before, .Icon_Redo:before, .Icon_Filter:before, .Icon_Print_Toggle:before, .Icon_Print:before, .Icon_Update_Toggle:before, 
-.Icon_Update:before, .Icon_Upload_Toggle:before, .Icon_Upload:before, .Icon_Exec_Toggle:before, .Icon_Exec:before, .Icon_Logout:before   
+.Icon_Update:before, .Icon_Upload_Toggle:before, .Icon_Upload:before, .Icon_Exec_Toggle:before, .Icon_Exec:before, .Icon_Logout:before,
+.Icon_Browse_Toggle:before, .Icon_Browse:before  
 {
 	content: "";
 	position: absolute;
@@ -275,7 +308,7 @@ LABEL.IconSmall
 
 .Icon_Clear:before 
 {
-	background: url("images/delete.svg") center / 65% no-repeat;
+	background: url("images/empty.png") center / 85% no-repeat;
 }
 
 .Icon_Close:before 
@@ -358,6 +391,17 @@ LABEL.IconSmall
 	background: url("images/upload.svg") center / 65% no-repeat;
 }
 
+.Icon_Browse_Toggle:before 
+{
+	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
+	background: url("images/browse.png") center / 85% no-repeat;
+}
+
+.Icon_Browse:before 
+{
+	background: url("images/browse.png") center / 85% no-repeat;
+}
+
 .Icon_Exec_Toggle:before 
 {
 	filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(349deg) brightness(105%) contrast(101%);
@@ -372,4 +416,263 @@ LABEL.IconSmall
 .Icon_Logout:before 
 {
 	background: url("images/logout.svg") center / 65% no-repeat;
+}
+
+.chatbot-toggler {
+  position: fixed;
+  bottom: 30px;
+  right: 35px;
+  outline: none;
+  border: none;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #724ae8;
+  transition: all 0.2s ease;
+  z-index:300;
+}
+
+.chatbot-toggler:hover {
+  animation: swing 1s ease;
+  animation-iteration-count: 1;
+}
+
+body.show-chatbot .chatbot-toggler {
+  transform: rotate(90deg);
+}
+
+.chatbot-toggler span {
+  color: #fff;
+  position: absolute;
+}
+
+.chatbot-toggler span:last-child,
+body.show-chatbot .chatbot-toggler span:first-child {
+  opacity: 0;
+}
+
+body.show-chatbot .chatbot-toggler span:last-child {
+  opacity: 1;
+}
+
+.chatbot {
+  position: fixed;
+  right: 35px;
+  bottom: 90px;
+  width: 420px;
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transform-origin: bottom right;
+  box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+    0 32px 64px -48px rgba(0, 0, 0, 0.5);
+  transition: all 0.1s ease;
+  z-index:300;
+}
+
+body.show-chatbot .chatbot {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.chatbot header {
+  padding: 16px 0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #724ae8, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 10s ease infinite;
+}
+
+.chatbot header span {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  display: none;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+header h2 {
+  font-size: 1.4rem;
+}
+
+.chatbot .chatbox {
+  overflow-y: auto;
+  height: 510px;
+  padding: 30px 20px 100px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 25px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 25px;
+}
+
+.chatbox .chat {
+  display: flex;
+  list-style: none;
+}
+
+.chatbox .outgoing {
+  margin: 20px 0;
+  justify-content: flex-end;
+}
+
+.chatbox .incoming span {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  cursor: default;
+  text-align: center;
+  line-height: 32px;
+  align-self: flex-end;
+  background: #724ae8;
+  border-radius: 4px;
+  margin: 0 10px 7px 0;
+}
+
+.chatbox .chat p {
+  white-space: pre-wrap;
+  padding: 12px 16px;
+  border-radius: 10px 10px 0 10px;
+  max-width: 75%;
+  color: #fff;
+  font-size: 0.95rem;
+  background: #724ae8;
+}
+
+.chatbox .incoming p {
+  border-radius: 10px 10px 10px 0;
+}
+
+.chatbox .chat p.error {
+  color: #721c24;
+  background: #f8d7da;
+}
+
+.chatbox .incoming p {
+  color: #000;
+  background: #f2f2f2;
+}
+
+.chatbot .chat-input {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  padding: 3px 20px;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input textarea {
+  height: 55px;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  max-height: 180px;
+  padding: 15px 15px 15px 0;
+  font-size: 0.95rem;
+}
+
+.chat-input span {
+  align-self: flex-end;
+  color: #724ae8;
+  cursor: pointer;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  font-size: 1.35rem;
+}
+
+.chat-input textarea:valid~span {
+  visibility: visible;
+}
+
+@media (max-width: 490px) {
+  .chatbot-toggler {
+    right: 20px;
+    bottom: 20px;
+  }
+
+  .chatbot {
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    border-radius: 0;
+    width: 100%;
+  }
+
+  .chatbot .chatbox {
+    height: 90%;
+    padding: 25px 15px 100px;
+  }
+
+  .chatbot .chat-input {
+    padding: 5px 15px;
+  }
+
+  .chatbot header span {
+    display: block;
+  }
+}
+
+@keyframes swing {
+    15% {
+        transform: translateX(5px);
+    }
+
+    30% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(3px);
+    }
+
+    65% {
+        transform: translateX(-3px);
+    }
+
+    80% {
+        transform: translateX(2px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }

@@ -11,7 +11,7 @@ switch(ft) {
         mdt = 'clike';
         break;
     case '.PY':
-        mdt = 'pl';
+        mdt = 'python';
         break;
     case '.PHP':
         mdt = 'php';
@@ -20,20 +20,29 @@ switch(ft) {
         mdt = 'perl';
         break;
     case '.XML':
+    case '.XSLT':
         mdt = 'xml';
         break;
     case '.JS':
+    case '.TS':
+    case '.JSON':
         mdt = 'javascript';
         break;
     case '.CSS':
         mdt = 'css';
         break;
-    case '.XSLT':
     case '.HTML':
-        mdt = 'text/html';
+    case '.HTM':
+        mdt = 'htmlmixed';
+        break;
+    case '.ASPX':
+        mdt = 'htmlembedded';
+        break;
+    case '.MD':
+        mdt = 'markdown';
         break;
     default:
-        mdt = 'javascript';
+        mdt = null;
 }
 var WORD = /[\w$]+/, RANGE = 500;
 var EXTRAWORDS = ["meta", "header", "lines", "key", "username", "password", "version", "api"];
@@ -224,9 +233,12 @@ function printFile() {
 }
 $("#btnPrint").click(function() { printFile(); });
 $("#btnRefresh").click(function() { window.location.reload(); });
-$("#imgHelp").click(function() { ShowHideTip(this,'divInstructions'); });
+$("#imgHelp").click(function() { ShowHideDiv(this,'divInstructions'); });
 $("#divInstructions").click(function() { this.style.visibility='hidden'; });
+$("#divRunResults").click(function() { this.style.visibility='hidden'; });
+$("#divViewFile").click(function() { this.style.visibility='hidden'; });
 $("#btnOpen").click(function() { return validate(this.form); });
+$("#btnCloseFile").click(function() { this.form.target="_self"; return true; });
 $("#btnClose").click(function() {
     if ($.trim($("#hdnFileName").val()) == "") window.close();
     else alert("You need to close file before closing window");
@@ -240,6 +252,50 @@ $("#btnSave").click(function() {
         $("#hdnFileName").val(fileName);
         return true;
     }
+});
+$("#btnBrowse").click(function() {
+    $("#uplTheFile").click();
+});
+$("#btnDeleteFile").click(function() {
+    var delFileName = $("#ddlFiles").val();
+    if(delFileName == '0')
+        return ShowMsg("ddlFiles","No File selected");
+    else
+        return confirm("Are you sure you want to delete this file? [" + delFileName + "]");
+});
+$("#btnExec").click(function() {
+    let ct = getelembyid('hdnFileType').value;
+    if(ct == '.JS')
+    {
+        let jsCode = document.getElementById('txtFileContent').value;
+        jsCode = jsCode.replaceAll('console.log','document.write(\'<\/p><p>\');document.write');
+        jsCode = jsCode.replace('<\/p>','');
+        let htmlCode = '<script>' + jsCode + '<\/script><\/p>';
+        $("#ifRunResults").attr('srcdoc', htmlCode);
+        ShowHideDiv(this,'divRunResults');
+        return false;
+    }
+    else
+        return ShowMsg("ddlFiles","Invalid Code");
+});
+$("#ifRunResults").on("load", function() {
+    $(this).contents().on("click", function() {
+        $("#divRunResults").click();
+    });
+});
+$("#btnView").click(function() {
+    let ct = getelembyid('hdnFileType').value;
+    if(ct == '.MD')
+    {
+        let mdCode = document.getElementById('txtFileContent').value;
+        let converter = new showdown.Converter();
+        $("#divViewFile").html(converter.makeHtml(mdCode));
+        ShowHideDiv(this,'divViewFile');
+        getelembyid('divViewFile').style.left = 2;
+        return false;
+    }
+    else
+        return ShowMsg("ddlFiles","Invalid File");
 });
 function ShowMsg(ctlId,errMsg){alert(errMsg);getelembyid(ctlId).focus();return false;}
 function getelembyid(i){return document.getElementById(i);}
@@ -255,9 +311,9 @@ function validate(theform)
 		return ShowMsg("uplTheFile","No File selected");
 	return true;
 }
-function ShowHideTip( SourceCtl, TipDivID )
+function ShowHideDiv( SourceCtl, DivID )
 {
-    var div = document.getElementById( TipDivID );
+    var div = document.getElementById( DivID );
     if ((div.style.visibility==null) || (div.style.visibility=="hidden"))
     {
         div.style.visibility = "visible";
@@ -280,3 +336,101 @@ function ShowHideTip( SourceCtl, TipDivID )
     div.style.left = x;
     div.style.top = y + SourceCtl.offsetHeight;
 }
+
+// Chat Bot starts here
+const chatbotToggler = document.querySelector(".chatbot-toggler");
+const closeBtn = document.querySelector(".close-btn");
+const chatbox = document.querySelector(".chatbox");
+const chatInput = document.querySelector(".chat-input textarea");
+const sendChatBtn = document.querySelector(".chat-input span");
+
+let userMessage = null; // Variable to store user's message
+const inputInitHeight = chatInput.scrollHeight;
+
+// API configuration
+const API_KEY = "XXXXX"; // Your API key here
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+const createChatLi = (message, className) => {
+    // Create a chat <li> element with passed message and className
+    const chatLi = document.createElement("li");
+    chatLi.classList.add("chat", `${className}`);
+    let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
+    chatLi.innerHTML = chatContent;
+    chatLi.querySelector("p").textContent = message;
+    return chatLi; // return chat <li> element
+};
+
+const generateResponse = async (chatElement) => {
+    const messageElement = chatElement.querySelector("p");
+
+    // Define the properties and message for the API request
+    const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents: [
+              {
+                  role: "user",
+                  parts: [{ text: userMessage }],
+              },
+            ],
+        }),
+    };
+
+    // Send POST request to API, get response and set the reponse as paragraph text
+    try {
+        const response = await fetch(API_URL, requestOptions);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error.message);
+
+        // Get the API response text and update the message element
+        messageElement.textContent = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1");
+    } catch (error) {
+        // Handle error
+        messageElement.classList.add("error");
+        messageElement.textContent = error.message;
+    } finally {
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+    }
+};
+
+const handleChat = () => {
+    userMessage = chatInput.value.trim(); // Get user entered message and remove extra whitespace
+    if (!userMessage) return;
+
+    // Clear the input textarea and set its height to default
+    chatInput.value = "";
+    chatInput.style.height = `${inputInitHeight}px`;
+
+    // Append the user's message to the chatbox
+    chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+
+    setTimeout(() => {
+        // Display "Thinking..." message while waiting for the response
+        const incomingChatLi = createChatLi("Thinking...", "incoming");
+    chatbox.appendChild(incomingChatLi);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    generateResponse(incomingChatLi);
+    }, 600);
+};
+
+chatInput.addEventListener("input", () => {
+    // Adjust the height of the input textarea based on its content
+    chatInput.style.height = `${inputInitHeight}px`;
+    chatInput.style.height = `${chatInput.scrollHeight}px`;
+});
+
+chatInput.addEventListener("keydown", (e) => {
+    // If Enter key is pressed without Shift key and the window
+    // width is greater than 800px, handle the chat
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+        e.preventDefault();
+        handleChat();
+    }
+});
+
+sendChatBtn.addEventListener("click", handleChat);
+closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
+chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
